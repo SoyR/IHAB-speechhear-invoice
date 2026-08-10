@@ -1,0 +1,216 @@
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>(주)아이해브 견적서 생성 시스템</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- App Flow Workspace Container -->
+    <div class="app-container" id="workspaceContainer">
+
+        <!-- Header Area Shared -->
+        <div class="header-area">
+            <div class="logo-title-group">
+                <div class="logo-placeholder"><img src="logo_256.png" alt="아이해브 로고" style="width:80%;height:80%;margin-top:6px;object-fit:contain;border-radius:8px;"></div>
+                <div class="main-title">(주)아이해브 견적서 양식 시스템</div>
+            </div>
+        </div>
+
+        <!-- STEP 1: Option List Grid -->
+        <div id="step1" class="step-section active">
+            <div class="section-title"><span>Step 1 of 2</span></div>
+
+            <div id="savedListSection" class="saved-list-section" style="display:none;">
+                <div class="saved-list-header" onclick="toggleSavedList()">
+                    <div class="saved-list-header-left">
+                        <span class="saved-list-title">저장된 견적서</span>
+                        <span class="saved-list-count" id="savedListCount"></span>
+                    </div>
+                    <span class="saved-list-toggle-icon" id="savedListToggleIcon">펼치기 ▾</span>
+                </div>
+                <div id="savedListContainer" style="display:none;"></div>
+            </div>
+
+            <div class="discount-toggle-bar">
+                <label class="discount-toggle-label">
+                    <input type="checkbox" id="discountToggle" onchange="toggleDiscount()">
+                    <span>안내용 할인가 적용</span>
+                </label>
+                <span class="discount-toggle-desc">체크 시 할인율과 할인가가 견적서에 표시됩니다</span>
+            </div>
+
+            <div class="options-grid" id="optionsContainer">
+                <!-- Javascript will insert options dynamically here -->
+            </div>
+
+            <div class="action-footer">
+                <button type="button" class="btn-primary" onclick="validateAndGoStep2()">다음 단계로</button>
+            </div>
+        </div>
+
+        <!-- STEP 2: Metadata and Values Inputs -->
+        <div id="step2" class="step-section">
+            <div class="section-title">상세 정보 입력 <span>Step 2 of 2</span></div>
+            <p style="color: #64748b; font-size: 14px; margin-bottom: 24px;">고객 정보 및 금액 정보를 입력해 주세요. 세액과 총 합계 금액은 공급가액 입력 시 실시간 자동 계산됩니다.</p>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">고객명 (기관/병원명)</label>
+                    <input type="text" id="inputClientName" class="form-input" placeholder="예: 미래청각재활센터">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">담당자명</label>
+                    <input type="text" id="inputManagerName" class="form-input" placeholder="예: 홍길동 팀장">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">견적일자</label>
+                    <input type="date" id="inputDate" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">총 공급가액 (Step 2 합산, 자동계산)</label>
+                    <input type="text" id="inputSupplyPrice" class="form-input" disabled value="0">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">총 세액 (부가세 10% - 자동계산)</label>
+                    <input type="text" id="inputTaxPrice" class="form-input" disabled value="0">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">총 견적금액 (합계 - 자동계산)</label>
+                    <input type="text" id="inputTotalPrice" class="form-input" disabled value="0">
+                </div>
+                <div class="form-group full-width">
+                    <label class="form-label">비고 (특이사항)</label>
+                    <textarea id="inputRemarks" class="form-input" placeholder="견적서 하단 비고란에 기재될 내용을 입력하세요."></textarea>
+                </div>
+            </div>
+
+            <div class="action-footer">
+                <button type="button" class="btn-secondary" onclick="goStep(1)">이전으로</button>
+                <button type="button" class="btn-primary" onclick="generateInvoice()">견적서 최종 생성</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- STEP 4 View wrapper: Only visible after generation -->
+    <div id="invoicePreviewWrapper" style="display: none; margin-bottom: 60px;">
+
+        <div class="global-top-bar">
+            <span>🎉 견적서 문서 생성이 완료되었습니다. 아래 인쇄 버튼을 누르거나 Ctrl+P로 저장 가능합니다.</span>
+            <div style="display:flex; gap:10px;">
+                <button class="btn-secondary" style="padding:6px 14px; font-size:13px; border:none;" onclick="resetSystem()">새로 만들기</button>
+                <button class="btn-primary" style="padding:6px 14px; font-size:13px; background-color:#499cdf;" onclick="printInvoice()">인쇄 / PDF 저장</button>
+                <button class="btn-primary" style="padding:6px 14px; font-size:13px; background-color:#16a34a;" onclick="saveInvoice()">저장하기</button>
+            </div>
+        </div>
+
+        <!-- Premium Invoice Structure Sheet -->
+        <div class="invoice-paper">
+
+            <!-- Main Content Top Area -->
+            <div class="invoice-main-content">
+
+                <!-- Table Layout Header -->
+                <div class="invoice-header-grid">
+                    <div class="invoice-header-cell">
+                        <div class="invoice-logo-title">
+                            <img class="invoice-logo-icon" src="logo_256.png" alt="아이해브 로고">
+                            <span class="invoice-brand-text">말귀 견적서</span>
+                        </div>
+                    </div>
+                    <div class="invoice-header-cell text-right">
+                        <div class="company-info-block">
+                            <div class="company-name-bold"><img src="logo_256.png" alt="아이해브 로고" style="width:24px;height:24px;object-fit:contain;vertical-align:middle;margin-right:6px;">(주)아이해브</div>
+                            <div><span class="company-info-label">주소 :</span> 경기 안양시 동안구 흥안대로 457-25 605호</div>
+                            <div><span class="company-info-label">전화번호 :</span> 031-496-8330</div>
+                            <div><span class="company-info-label">이메일 :</span> support@ihab.co.kr</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Client and Meta List Row -->
+                <div class="invoice-meta-grid">
+                    <div class="invoice-meta-cell">
+                        <div class="meta-label">견적 수신처</div>
+                        <div class="meta-value-client" id="pdfClientName">-</div>
+                        <div class="meta-value-sub" id="pdfManagerName">담당자: -</div>
+                    </div>
+                    <div class="invoice-meta-cell">
+                        <ul class="meta-info-list">
+                            <li class="meta-info-item"><span class="meta-info-key">견적 번호:</span> <span id="pdfInvoiceNumber">-</span></li>
+                            <li class="meta-info-item"><span class="meta-info-key">견적 일자:</span> <span id="pdfDate">-</span></li>
+                            <li class="meta-info-item"><span class="meta-info-key">유효 기한:</span> 발급일로부터 30일</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Table Line Items -->
+                <table class="invoice-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 8%;">코드</th>
+                            <th style="width: 44%;">품목명 및 상세 구성</th>
+                            <th class="text-right" style="width: 7%;">수량</th>
+                            <th class="text-right" style="width: 18%;">단가 (공급가액)</th>
+                            <th class="text-right" style="width: 23%;">합계금액 (VAT 포함)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="invoiceTableBody">
+                    </tbody>
+                </table>
+
+                <!-- Remarks Box -->
+                <div class="remarks-container">
+                    <div class="remarks-title">비고 및 특이사항</div>
+                    <div class="remarks-content" id="pdfRemarks">-</div>
+                </div>
+
+            </div>
+
+            <!-- Bottom Accent Layout Banner -->
+            <div class="invoice-bottom-banner">
+                <table class="banner-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40%;">입금 계좌 안내</th>
+                            <th style="width: 25%;">지급 기한</th>
+                            <th class="text-right" style="width: 35%;">총 견적 금액 (합계)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="bank-info-text">
+                                    신한은행 140-014-875639<br>
+                                    예금주: (주)아이해브
+                                </div>
+                            </td>
+                            <td>
+                                <div class="due-date-text" id="pdfDueDateBanner">-</div>
+                            </td>
+                            <td class="text-right">
+                                <div class="grand-total-text" id="pdfGrandTotalBanner">0원</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- Stamp Signature Block Row -->
+                <div class="footer-sign-row">
+                    <div class="thank-you-msg">귀사의 무궁한 발전을 기원합니다. 감사합니다.</div>
+                    <div class="seal-wrapper">
+                        <span>(주)아이해브 대표이사</span>
+                        <img class="seal-box" src="corp-stamp.png" alt="아이해브 직인">
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
