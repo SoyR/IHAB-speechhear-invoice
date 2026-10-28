@@ -4,6 +4,12 @@
     font-weight: 700;
     font-display: swap;
 }
+@font-face {
+    font-family: 'Paperologi';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-9Black.woff2') format('woff2');
+    font-weight: 900;
+    font-display: swap;
+}
 
 /* Base Reset & Typography */
 *, *::before, *::after {
@@ -371,6 +377,89 @@ body {
 }
 .desc-l4 { padding-left: 18px; font-size: 12px; color: #94a3b8; margin: 1px 0; }
 
+/* STEP 3: Document Language / Currency Settings */
+.doc-settings-bar {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    padding: 18px;
+    margin-bottom: 24px;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+}
+.doc-settings-bar .form-input {
+    height: 42px;
+    background-color: #fff;
+}
+/* STEP 3: 품목 순서 (수출 USD 는 단가 입력 포함) */
+.item-order-section {
+    padding: 18px;
+    margin-bottom: 24px;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+}
+.item-order-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #202020;
+    margin-bottom: 10px;
+}
+.item-order-title span {
+    font-size: 12px;
+    font-weight: 400;
+    color: #94a3b8;
+    margin-left: 8px;
+}
+.item-order-row {
+    display: grid;
+    grid-template-columns: 64px minmax(0, 1fr) 160px;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid #e8edf3;
+    font-size: 13px;
+    color: #475569;
+}
+.item-order-row.with-usd {
+    grid-template-columns: 64px minmax(0, 1fr) 70px 200px;
+}
+.item-order-row:last-child { border-bottom: none; }
+.item-order-btns {
+    display: flex;
+    gap: 4px;
+}
+.item-order-btn {
+    width: 28px;
+    height: 28px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    background-color: #fff;
+    color: #475569;
+    font-size: 11px;
+    cursor: pointer;
+}
+.item-order-btn:hover:not(:disabled) {
+    border-color: #499cdf;
+    color: #499cdf;
+}
+.item-order-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+.item-order-name { font-weight: 600; color: #202020; }
+.item-order-meta { text-align: right; }
+.item-order-row .custom-price-input-wrap {
+    margin-top: 0;
+    min-width: 0;
+}
+.item-order-row .custom-price-field {
+    width: 100%;
+    min-width: 0;
+    text-align: right;
+}
+
 /* STEP 3: Form Input Fields */
 .form-grid {
     display: grid;
@@ -505,6 +594,7 @@ textarea.form-input {
     font-weight: 700;
     color: #202020;
 }
+.invoice-brand-text.brand-export { font-weight: 900; }
 .invoice-type-badge {
     font-size: 13px;
     color: #94a3b8;
@@ -537,7 +627,12 @@ textarea.form-input {
 .invoice-meta-cell {
     display: table-cell;
     vertical-align: top;
-    width: 50%;
+}
+/* 수신처는 남은 폭 전체 사용, 우측 견적 정보는 내용 폭 + 32px 간격 */
+.invoice-meta-cell:last-child {
+    width: 1%;
+    white-space: nowrap;
+    padding-left: 32px;
 }
 
 .meta-label {
@@ -571,7 +666,8 @@ textarea.form-input {
 }
 .meta-info-key {
     display: inline-block;
-    width: 76px;
+    min-width: 76px;
+    white-space: nowrap;
     color: #94a3b8;
     font-size: 14px;
     margin-right: 4px;
@@ -640,6 +736,10 @@ textarea.form-input {
     vertical-align: middle;
 }
 
+/* 수출 문서: CODE 열 숨김, 품목명 열이 그 폭을 사용 */
+.invoice-table.no-code .col-code { display: none; }
+.invoice-table.no-code th.col-item { width: 52% !important; }
+
 /* Remarks/Notes Box */
 .remarks-container {
     margin-top: 40px;
@@ -681,6 +781,11 @@ textarea.form-input {
     vertical-align: middle;
     font-size: 14px;
     color: #202020;
+}
+/* 입금 계좌 정보와 지급 기한 사이 간격 */
+.banner-table th:nth-child(2),
+.banner-table td:nth-child(2) {
+    padding-left: 40px;
 }
 
 .bank-info-text {
@@ -753,24 +858,14 @@ textarea.form-input {
 /* Saved Invoice List */
 .saved-list-section {
     margin-top: 40px;
-    margin-bottom: 32px;
     padding-top: 32px;
-    padding-bottom: 32px;
     border-top: 1px solid #e2e8f0;
-    border-bottom: 1px solid #e2e8f0;
 }
 .saved-list-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 0;
-    cursor: pointer;
-    user-select: none;
-}
-.saved-list-header-left {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    margin-bottom: 14px;
 }
 .saved-list-title {
     font-size: 15px;
@@ -780,14 +875,6 @@ textarea.form-input {
 .saved-list-count {
     font-size: 13px;
     color: #94a3b8;
-}
-.saved-list-toggle-icon {
-    font-size: 13px;
-    color: #499cdf;
-    font-weight: 600;
-}
-#savedListContainer {
-    margin-top: 14px;
 }
 .saved-item-card {
     display: flex;

@@ -18,20 +18,29 @@
             </div>
         </div>
 
-        <!-- STEP 1: Option List Grid -->
+        <!-- STEP 1: Main Target Select -->
         <div id="step1" class="step-section active">
-            <div class="section-title"><span>Step 1 of 2</span></div>
+            <div class="section-title">구분 선택 <span>Step 1 of 3</span></div>
+            <p style="color: #64748b; font-size: 14px; margin-bottom: 30px;">견적서를 발급할 대상의 성격에 맞춰 버튼을 선택해 주세요.</p>
+            <div class="type-btn-container">
+                <button type="button" class="type-btn" onclick="selectType('center')">센터</button>
+                <button type="button" class="type-btn" disabled style="opacity:0.4; cursor:not-allowed;">병원</button>
+                <button type="button" class="type-btn" onclick="selectType('export')">수출</button>
+            </div>
 
             <div id="savedListSection" class="saved-list-section" style="display:none;">
-                <div class="saved-list-header" onclick="toggleSavedList()">
-                    <div class="saved-list-header-left">
-                        <span class="saved-list-title">저장된 견적서</span>
-                        <span class="saved-list-count" id="savedListCount"></span>
-                    </div>
-                    <span class="saved-list-toggle-icon" id="savedListToggleIcon">펼치기 ▾</span>
+                <div class="saved-list-header">
+                    <span class="saved-list-title">저장된 견적서</span>
+                    <span class="saved-list-count" id="savedListCount"></span>
                 </div>
-                <div id="savedListContainer" style="display:none;"></div>
+                <div id="savedListContainer"></div>
             </div>
+        </div>
+
+        <!-- STEP 2: Option List Grid -->
+        <div id="step2" class="step-section">
+            <div class="section-title"><span id="typeTitleText">옵션 선택</span> <span>Step 2 of 3</span></div>
+            <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">제공 품목 중 견적서에 포함할 옵션 1개를 선택하고 상세 구성을 확인해 주세요.</p>
 
             <div class="discount-toggle-bar">
                 <label class="discount-toggle-label">
@@ -46,14 +55,37 @@
             </div>
 
             <div class="action-footer">
-                <button type="button" class="btn-primary" onclick="validateAndGoStep2()">다음 단계로</button>
+                <button type="button" class="btn-secondary" onclick="goStep(1)">이전으로</button>
+                <button type="button" class="btn-primary" onclick="validateAndGoStep3()">다음 단계로</button>
             </div>
         </div>
 
-        <!-- STEP 2: Metadata and Values Inputs -->
-        <div id="step2" class="step-section">
-            <div class="section-title">상세 정보 입력 <span>Step 2 of 2</span></div>
+        <!-- STEP 3: Metadata and Values Inputs -->
+        <div id="step3" class="step-section">
+            <div class="section-title">상세 정보 입력 <span>Step 3 of 3</span></div>
             <p style="color: #64748b; font-size: 14px; margin-bottom: 24px;">고객 정보 및 금액 정보를 입력해 주세요. 세액과 총 합계 금액은 공급가액 입력 시 실시간 자동 계산됩니다.</p>
+
+            <div class="doc-settings-bar" id="docSettingsBar" style="display:none;">
+                <div class="form-group">
+                    <label class="form-label">문서 종류</label>
+                    <select id="inputDocType" class="form-input" onchange="onDocSettingsChange()">
+                        <option value="quotation">Quotation (견적서)</option>
+                        <option value="invoice">Invoice (청구서)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">통화</label>
+                    <select id="inputCurrency" class="form-input" onchange="onDocSettingsChange()">
+                        <option value="KRW">KRW (원)</option>
+                        <option value="USD">USD (달러)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="item-order-section">
+                <div class="item-order-title">품목 순서 <span id="itemOrderDesc">▲▼ 버튼으로 견적서에 표시될 순서를 바꿀 수 있습니다.</span></div>
+                <div id="itemOrderList"></div>
+            </div>
 
             <div class="form-grid">
                 <div class="form-group">
@@ -72,7 +104,7 @@
                     <label class="form-label">총 공급가액 (Step 2 합산, 자동계산)</label>
                     <input type="text" id="inputSupplyPrice" class="form-input" disabled value="0">
                 </div>
-                <div class="form-group">
+                <div class="form-group" id="taxPriceGroup">
                     <label class="form-label">총 세액 (부가세 10% - 자동계산)</label>
                     <input type="text" id="inputTaxPrice" class="form-input" disabled value="0">
                 </div>
@@ -87,7 +119,7 @@
             </div>
 
             <div class="action-footer">
-                <button type="button" class="btn-secondary" onclick="goStep(1)">이전으로</button>
+                <button type="button" class="btn-secondary" onclick="goStep(2)">이전으로</button>
                 <button type="button" class="btn-primary" onclick="generateInvoice()">견적서 최종 생성</button>
             </div>
         </div>
@@ -100,8 +132,7 @@
         <div class="global-top-bar">
             <span>🎉 견적서 문서 생성이 완료되었습니다. 아래 인쇄 버튼을 누르거나 Ctrl+P로 저장 가능합니다.</span>
             <div style="display:flex; gap:10px;">
-                <button class="btn-secondary" style="padding:6px 14px; font-size:13px; border:none;" onclick="resetSystem()">새로 만들기</button>
-                <button class="btn-primary" style="padding:6px 14px; font-size:13px; background-color:#499cdf;" onclick="printInvoice()">인쇄 / PDF 저장</button>
+                <button class="btn-secondary" style="padding:6px 14px; font-size:13px; border:none;" onclick="resetSystem()">새로 만들기</button>                <button class="btn-primary" style="padding:6px 14px; font-size:13px; background-color:#499cdf;" onclick="printInvoice()">인쇄 / PDF 저장</button>
                 <button class="btn-primary" style="padding:6px 14px; font-size:13px; background-color:#16a34a;" onclick="saveInvoice()">저장하기</button>
             </div>
         </div>
@@ -116,16 +147,17 @@
                 <div class="invoice-header-grid">
                     <div class="invoice-header-cell">
                         <div class="invoice-logo-title">
-                            <img class="invoice-logo-icon" src="logo_256.png" alt="아이해브 로고">
-                            <span class="invoice-brand-text">말귀 견적서</span>
+                            <img class="invoice-logo-icon" src="logo-soundlocalization.png" alt="아이해브 로고">
+                            <span class="invoice-brand-text" data-i18n="brand">소리방향성시스템 견적서</span>
                         </div>
                     </div>
                     <div class="invoice-header-cell text-right">
                         <div class="company-info-block">
-                            <div class="company-name-bold"><img src="logo_256.png" alt="아이해브 로고" style="width:24px;height:24px;object-fit:contain;vertical-align:middle;margin-right:6px;">(주)아이해브</div>
-                            <div><span class="company-info-label">주소 :</span> 경기 안양시 동안구 흥안대로 457-25 605호</div>
-                            <div><span class="company-info-label">전화번호 :</span> 031-496-8330</div>
-                            <div><span class="company-info-label">이메일 :</span> support@ihab.co.kr</div>
+                            <div class="company-name-bold"><img src="logo_256.png" alt="아이해브 로고" style="width:24px;height:24px;object-fit:contain;vertical-align:middle;margin-right:6px;"><span data-i18n="companyName">(주)아이해브</span></div>
+                            <div data-i18n="address"><span class="company-info-label">주소 :</span> 경기 안양시 동안구 흥안대로 457-25 605호</div>
+                            <div data-i18n="phone"><span class="company-info-label">전화번호 :</span> 031-496-8330</div>
+                            <div data-i18n="cell"></div>
+                            <div data-i18n="email"><span class="company-info-label">이메일 :</span> support@ihab.co.kr</div>
                         </div>
                     </div>
                 </div>
@@ -133,28 +165,28 @@
                 <!-- Client and Meta List Row -->
                 <div class="invoice-meta-grid">
                     <div class="invoice-meta-cell">
-                        <div class="meta-label">견적 수신처</div>
+                        <div class="meta-label" data-i18n="recipient">견적 수신처</div>
                         <div class="meta-value-client" id="pdfClientName">-</div>
                         <div class="meta-value-sub" id="pdfManagerName">담당자: -</div>
                     </div>
                     <div class="invoice-meta-cell">
                         <ul class="meta-info-list">
-                            <li class="meta-info-item"><span class="meta-info-key">견적 번호:</span> <span id="pdfInvoiceNumber">-</span></li>
-                            <li class="meta-info-item"><span class="meta-info-key">견적 일자:</span> <span id="pdfDate">-</span></li>
-                            <li class="meta-info-item"><span class="meta-info-key">유효 기한:</span> 발급일로부터 30일</li>
+                            <li class="meta-info-item"><span class="meta-info-key" data-i18n="numberKey">견적 번호:</span> <span id="pdfInvoiceNumber">-</span></li>
+                            <li class="meta-info-item"><span class="meta-info-key" data-i18n="dateKey">견적 일자:</span> <span id="pdfDate">-</span></li>
+                            <li class="meta-info-item"><span class="meta-info-key" data-i18n="validityKey">유효 기한:</span> <span data-i18n="validityVal">발급일로부터 30일</span></li>
                         </ul>
                     </div>
                 </div>
 
                 <!-- Table Line Items -->
-                <table class="invoice-table">
+                <table class="invoice-table" id="invoiceTable">
                     <thead>
                         <tr>
-                            <th style="width: 8%;">코드</th>
-                            <th style="width: 44%;">품목명 및 상세 구성</th>
-                            <th class="text-right" style="width: 7%;">수량</th>
-                            <th class="text-right" style="width: 18%;">단가 (공급가액)</th>
-                            <th class="text-right" style="width: 23%;">합계금액 (VAT 포함)</th>
+                            <th class="col-code" style="width: 8%;" data-i18n="thCode">코드</th>
+                            <th class="col-item" style="width: 44%;" data-i18n="thItem">품목명 및 상세 구성</th>
+                            <th class="text-right" style="width: 7%;" data-i18n="thQty">수량</th>
+                            <th class="text-right" style="width: 18%;" data-i18n="thUnit">단가 (공급가액)</th>
+                            <th class="text-right" style="width: 23%;" data-i18n="thAmount">합계금액 (VAT 포함)</th>
                         </tr>
                     </thead>
                     <tbody id="invoiceTableBody">
@@ -163,7 +195,7 @@
 
                 <!-- Remarks Box -->
                 <div class="remarks-container">
-                    <div class="remarks-title">비고 및 특이사항</div>
+                    <div class="remarks-title" data-i18n="remarksTitle">비고 및 특이사항</div>
                     <div class="remarks-content" id="pdfRemarks">-</div>
                 </div>
 
@@ -174,15 +206,15 @@
                 <table class="banner-table">
                     <thead>
                         <tr>
-                            <th style="width: 40%;">입금 계좌 안내</th>
-                            <th style="width: 25%;">지급 기한</th>
-                            <th class="text-right" style="width: 35%;">총 견적 금액 (합계)</th>
+                            <th style="width: 40%;" data-i18n="bankTitle">입금 계좌 안내</th>
+                            <th style="width: 25%;" data-i18n="dueTitle">지급 기한</th>
+                            <th class="text-right" style="width: 35%;" data-i18n="totalTitle">총 견적 금액 (합계)</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
                             <td>
-                                <div class="bank-info-text">
+                                <div class="bank-info-text" data-i18n="bankInfo">
                                     신한은행 140-014-875639<br>
                                     예금주: (주)아이해브
                                 </div>
@@ -199,9 +231,9 @@
 
                 <!-- Stamp Signature Block Row -->
                 <div class="footer-sign-row">
-                    <div class="thank-you-msg">귀사의 무궁한 발전을 기원합니다. 감사합니다.</div>
+                    <div class="thank-you-msg" data-i18n="thanks">귀사의 무궁한 발전을 기원합니다. 감사합니다.</div>
                     <div class="seal-wrapper">
-                        <span>(주)아이해브 대표이사</span>
+                        <span data-i18n="sealLabel">(주)아이해브 대표이사</span>
                         <img class="seal-box" src="corp-stamp.png" alt="아이해브 직인">
                     </div>
                 </div>
